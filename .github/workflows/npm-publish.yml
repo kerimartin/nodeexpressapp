@@ -65,4 +65,4 @@ jobs:
             username: azureuser
             key: ${{ secrets.DEPLOY_KEY }}
             port: 22
-            script: sudo service nginx restart
+            script: sudo systemctl restart nodeapp
