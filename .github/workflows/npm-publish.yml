@@ -1,0 +1,68 @@
+# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
+# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+
+name: Node.js Package
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm ci
+      - run: npm install
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: nodeapp
+          path: ${{ github.workspace }}
+          
+  upload-with-rsync:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: nodeapp
+    
+      - name: Deploy to server
+        id: deploy
+        uses: Pendect/action-rsyncer@v1.1.0
+
+        env:
+          DEPLOY_KEY: ${{secrets.DEPLOY_KEY}}
+        with:
+          flags: '-avzr --delete --rsync-path="sudo rsync"'
+          options: ''
+          ssh_options: ''
+          src: '/'
+          dest: 'azureuser@20.14.162.229:/var/www/html/nodeapp'
+
+      - name: Display status from deploy
+        run:
+           echo "${{ steps.deploy.outputs.status }}"
+         
+      - name: Restart service
+        uses: appleboy/ssh-action@master
+        with:
+            host: 20.14.162.229
+            username: azureuser
+            key: ${{ secrets.DEPLOY_KEY }}
+            port: 22
+            script: sudo systemctl restart nodeapp
