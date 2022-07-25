@@ -19,7 +19,6 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npm install
-      - run: npm run build
 
   publish-npm:
     needs: build
@@ -31,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nodeapp
-          path: ${{env.DOTNET_ROOT}}/app
+          path: ${{env.DOTNET_ROOT}}
           
   upload-with-rsync:
     needs: publish-npm
