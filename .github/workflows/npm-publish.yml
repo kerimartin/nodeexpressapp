@@ -30,7 +30,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nodeapp
-          path: /
           
   upload-with-rsync:
     needs: publish-npm
