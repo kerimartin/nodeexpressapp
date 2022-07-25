@@ -34,7 +34,7 @@ jobs:
           
   upload-with-rsync:
     needs: publish-npm
-    runs-on: ubuntu latest
+    runs-on: ubuntu-latest
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
